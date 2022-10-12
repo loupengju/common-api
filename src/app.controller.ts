@@ -1,7 +1,6 @@
 import { Bind, Controller, Get, Query, Res, StreamableFile } from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
-import { createReadStream, createWriteStream } from 'fs';
 import type { Response } from 'express';
 
 const _axios = axios.create({
