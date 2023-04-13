@@ -1,4 +1,4 @@
-import { Bind, Controller, Get, Query, Res, StreamableFile } from '@nestjs/common';
+import { Bind, Body, Controller, Get, Post, Query, Res, StreamableFile } from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
 import type { Response } from 'express';
@@ -37,5 +37,16 @@ export class AppController {
       res.on('finish', resolve);
       res.on('error', reject);
    });
+  }
+
+  @Post('/beacon')
+  @Bind(Res({ passthrough: true }))
+  async beacon(@Body() query, @Res({ passthrough: true }) res: Response) {
+    // 允许跨域
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+    });
+    console.log(query);
+    return 'ok';
   }
 }
