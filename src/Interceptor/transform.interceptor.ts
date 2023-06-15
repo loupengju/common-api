@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable } from "@nestjs/common";
 import { execSync } from "child_process";
 import { map } from "rxjs/operators";
 
-const excludes = ['/download'];
+const excludes = ['/download', '/pdf'];
 
 @Injectable()
 /**

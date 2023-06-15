@@ -1,7 +1,8 @@
-import { Bind, Body, Controller, Get, Post, Query, Res, StreamableFile } from '@nestjs/common';
+import { Bind, Body, Controller, Get, Header, Post, Query, Res, StreamableFile } from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
 import type { Response } from 'express';
+import * as PDFLib from 'pdf-lib';
 
 const _axios = axios.create({
   timeout: 60 * 1000
@@ -48,5 +49,45 @@ export class AppController {
     });
     console.log(query);
     return 'ok';
+  }
+
+  /**
+   * @description: 利用pdf-lib库，将传入图片转换为pdf文件
+   * @return {*} 返回pdf文件流
+   * @param query
+   * @param res
+   * @example: http://localhost:3000/pdf?url=https://www.baidu.com/img/flexible/logo/pc/result.png
+   * @example: http://localhost:3000/pdf?url=https://www.baidu.com/img/flexible/logo/pc/result.png&name=百度logo
+   */
+  @Get('/pdf')
+  @Bind(Res({ passthrough: true }))
+  async pdf(@Query() query, @Res({ passthrough: true }) res: Response) {
+    // 允许跨域
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+    });
+    const { url, name } = query;
+    const response = await _axios.get(url, {responseType: 'arraybuffer'});
+    const pdfDoc = await PDFLib.PDFDocument.create();
+    const pngImage = await pdfDoc.embedPng(response.data);
+    const pngDims = pngImage.scale(0.5);
+    const page = pdfDoc.addPage([pngDims.width, pngDims.height]);
+    page.drawImage(pngImage, {
+      x: 0,
+      y: 0,
+      width: pngDims.width,
+      height: pngDims.height,
+    });
+    const pdfBytes = await pdfDoc.save();
+    const pdfFile = new StreamableFile(pdfBytes);
+    res.set({
+      'Content-Type': pdfFile.getHeaders().type,
+      'Content-Disposition': `attachment; filename=${name || 'file'}.pdf`,
+    });
+    pdfFile.getStream().pipe(res);
+    return new Promise((resolve, reject) => {
+      res.on('finish', resolve);
+      res.on('error', reject);
+   });
   }
 }
