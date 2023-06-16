@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import axios from 'axios';
 import type { Response } from 'express';
 import * as PDFLib from 'pdf-lib';
+import * as ColorThief from 'colorthief';
 
 const _axios = axios.create({
   timeout: 60 * 1000
@@ -89,5 +90,21 @@ export class AppController {
       res.on('finish', resolve);
       res.on('error', reject);
    });
+  }
+
+  /**
+   * @description 使用colorthief库获取图片主题色
+   * @params 参数：url
+   */
+  @Get('/getColor')
+  @Bind(Res({ passthrough: true }))
+  async getColor(@Query() query, @Res({ passthrough: true }) res: Response) {
+    // 允许跨域
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+    });
+    const { url } = query;
+    const rgb = await ColorThief.getColor(url);
+    return ['rgb(', rgb.join(','), ')'].join('');
   }
 }
