@@ -32,13 +32,13 @@ export class AppController {
       'Content-Type': response.headers['content-type'],
       'Content-Disposition': `attachment; filename=${fingerPrint}.${subFix}`,
     });
+  //   response.data.pipe(res);
 
-    response.data.pipe(res);
-
-    return new Promise((resolve, reject) => {
-      res.on('finish', resolve);
-      res.on('error', reject);
-   });
+  //   return new Promise((resolve, reject) => {
+  //     res.on('finish', resolve);
+  //     res.on('error', reject);
+  //  });
+    return new StreamableFile(response.data);
   }
 
   @Post('/beacon')
@@ -85,11 +85,7 @@ export class AppController {
       'Content-Type': pdfFile.getHeaders().type,
       'Content-Disposition': `attachment; filename=${name || 'file'}.pdf`,
     });
-    pdfFile.getStream().pipe(res);
-    return new Promise((resolve, reject) => {
-      res.on('finish', resolve);
-      res.on('error', reject);
-   });
+    return pdfFile;
   }
 
   /**
